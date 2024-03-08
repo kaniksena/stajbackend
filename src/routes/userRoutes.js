@@ -1,26 +1,36 @@
 const express = require('express');
-const User = require('./src/models/users.js');
 const router = express.Router();
+const { MongoClient } = require('mongodb');
+
+// MongoDB bağlantı URL'si
+const uri = 'mongodb://localhost:27017';
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+// Veritabanına bağlanma
+async function connectToMongoDB() {
+    try {
+        await client.connect();
+        console.log('MongoDB\'ye başarıyla bağlandı.');
+    } catch (error) {
+        console.error('MongoDB bağlantısı sırasında bir hata oluştu:', error);
+    }
+}
+
+connectToMongoDB();
 
 router.post('/users', async (req, res) => {
     try {
-        const { username, password, name, surname, email } = req.body;
-        
-        // Yeni bir kullanıcı nesnesi oluştur
-        const newUser = new User({
-            username,
-            password,
-            name,
-            surname,
-            email
-        });
+        const userData = req.body; // POST isteğinden gelen veriler
+        const database = client.db('stajUygulaması'); // Veritabanı adı
+        const collection = database.collection('users'); // Koleksiyon adı
 
-        // Yeni kullanıcıyı veritabanına kaydet
-        const savedUser = await newUser.save();
-
-        res.status(201).json(savedUser); // 201 Created durumuyla yeni kullanıcıyı yanıt olarak döndür
+        // Veriyi ekleme
+        const result = await collection.insertOne(userData);
+        console.log(`${result.insertedCount} adet kullanıcı eklendi.`);
+        res.status(201).send('Kullanıcı başarıyla eklendi.');
     } catch (error) {
-        res.status(400).json({ message: error.message }); // Hata durumunu yanıt olarak döndür
+        console.error('Kullanıcı ekleme sırasında bir hata oluştu:', error);
+        res.status(500).send('Kullanıcı eklenirken bir hata oluştu.');
     }
 });
 

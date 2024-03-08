@@ -1,17 +1,10 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const userRoutes = require('./userRoutes.js');
+const bodyParser = require('body-parser');
+const userRoutes = require('/Users/senakanik/Desktop/stajbackend/stajbackend/src/routes/userRoutes.js');
 
 const app = express();
-
-// MongoDB bağlantısı
-mongoose.connect('mongodb://localhost:27017/stajUygulaması', { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log('MongoDB bağlantısı başarılı'))
-    .catch(err => console.error('MongoDB bağlantı hatası:', err));
-
-// JSON verileri için body-parser middleware'ini kullanın
-app.use(express.json());
-
+app.use(bodyParser.json());
 // Kullanıcı route'larını tanımlayın
 app.use('/api', userRoutes);
 
